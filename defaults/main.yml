@@ -1,0 +1,9 @@
+---
+# defaults file for roles/sshd
+
+sshd_password_authentication_enabled: false
+# sshd_allow_users: []
+# sshd_allow_groups: []
+
+sshd_ldap_enabled: false
+# sshd_ldap_basedn: "dc=example,dc=com"

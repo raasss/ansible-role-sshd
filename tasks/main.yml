@@ -1,0 +1,69 @@
+---
+# tasks file for roles/sshd
+
+# - name: Set permissions on /etc/ssh/sshd_config
+#   file:
+#     path: "/etc/ssh/sshd_config"
+#     state: file
+#     mode: 0640
+#     owner: root
+#     group: root
+
+- name: install required packages
+  apt:
+    name:
+      - ldap-utils
+    state: present
+  when: sshd_ldap_enabled
+  tags:
+  - install
+
+- name: Set permissions on /etc/ssh/sshd_config.d
+  file:
+    path: "/etc/ssh/sshd_config.d"
+    state: directory
+    mode: 0750
+    owner: root
+    group: root
+  tags:
+  - configure
+
+- name: Set directory for user authorized keys
+  file:
+    path: "/etc/ssh/authorized_keys/"
+    state: directory
+    mode: 0751
+    owner: root
+    group: root
+  tags:
+  - install
+    
+# - name: Enable password authentication
+#   ansible.builtin.lineinfile:
+#     path: /etc/ssh/sshd_config
+#     regexp: '^PasswordAuthentication '
+#     # insertafter: '^#Listen '
+#     line: PasswordAuthentication yes
+#   notify: restart sshd
+
+- name: Deploy fetch-ssh-keys-from-ldap
+  template:
+    src: fetch-ssh-keys-from-ldap.j2
+    dest: /etc/ssh/fetch-ssh-keys-from-ldap
+    owner: root
+    group: root
+    mode: 0700
+  when: sshd_ldap_enabled
+  tags:
+  - configure
+
+- name: Configure sshd_config
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0640
+  notify: restart sshd
+  tags:
+  - configure
